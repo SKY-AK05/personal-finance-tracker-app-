@@ -26,14 +26,7 @@ export default function CreditExpensesScreen() {
     }
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchData = async () => {
-        await loadExpenses();
-      };
-      fetchData();
-    }, [loadExpenses])
-  );
+  useFocusEffect(loadExpenses);
 
   const renderExpenseItem = ({ item }: { item: Expense }) => (
     <TouchableOpacity style={styles.expenseItem}>
