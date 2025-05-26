@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Languages as Language, Share, Moon, Download, CircleHelp as HelpCircle, Trash2 } from 'lucide-react-native';
+import { exportToExcel } from '@/utils/exportUtils';
 
 export default function SettingsScreen() {
   const { t, language, setLanguage } = useTranslation();
@@ -16,16 +17,7 @@ export default function SettingsScreen() {
   };
 
   const handleExportData = () => {
-    // In a real app, this would trigger data export
-    Alert.alert(
-      t('exportData'),
-      t('exportDataDescription'),
-      [
-        { text: t('cancel'), style: 'cancel' },
-        { text: 'Excel', onPress: () => console.log('Export as Excel') },
-        { text: 'PDF', onPress: () => console.log('Export as PDF') },
-      ]
-    );
+    exportToExcel();
   };
 
   const handleClearData = () => {
@@ -36,7 +28,15 @@ export default function SettingsScreen() {
         { text: t('cancel'), style: 'cancel' },
         { 
           text: t('clearData'), 
-          onPress: () => console.log('Clear all data'), 
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('expenses');
+              Alert.alert('Success', 'All expense data has been cleared.');
+            } catch (error) {
+              console.error('Error clearing data:', error);
+              Alert.alert('Error', 'Failed to clear data. Please try again.');
+            }
+          }, 
           style: 'destructive' 
         },
       ]
@@ -100,7 +100,7 @@ export default function SettingsScreen() {
               <View style={styles.iconContainer}>
                 <Download size={22} color="#000000" />
               </View>
-              <Text style={styles.settingLabel}>{t('exportData')}</Text>
+              <Text style={styles.settingLabel}>Export to Excel</Text>
             </View>
           </TouchableOpacity>
           
