@@ -1,45 +1,51 @@
+
+import * as XLSX from 'xlsx';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Alert } from 'react-native';
-import { getAllExpenses } from './storage';
+import { Expense } from './storage';
 
-export const exportToExcel = async () => {
+export const exportToExcel = async (expenses: Expense[]) => {
   try {
-    const expenses = await getAllExpenses();
-
-    if (expenses.length === 0) {
-      Alert.alert('No Data', 'No expense data available to export.');
-      return;
-    }
-
-    // Create CSV content (Excel-compatible)
-    const headers = 'Date,Type,Amount,Description,Category\n';
-    const csvContent = expenses.map(expense => 
-      `${expense.date},${expense.type},${expense.amount},"${expense.description}","${expense.category || ''}"`
-    ).join('\n');
-
-    const fullContent = headers + csvContent;
-
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    
+    // Prepare data for Excel
+    const excelData = expenses.map(expense => ({
+      Date: expense.date,
+      Type: expense.type,
+      Category: expense.category,
+      Amount: expense.amount,
+      Description: expense.description
+    }));
+    
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Expenses');
+    
+    // Generate Excel file
+    const wbout = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
+    
     // Create file path
-    const fileName = `expenses_${new Date().toISOString().split('T')[0]}.csv`;
+    const fileName = `expenses_${new Date().toISOString().split('T')[0]}.xlsx`;
     const fileUri = FileSystem.documentDirectory + fileName;
-
+    
     // Write file
-    await FileSystem.writeAsStringAsync(fileUri, fullContent);
-
+    await FileSystem.writeAsStringAsync(fileUri, wbout, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    
     // Share file
     if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(fileUri, {
-        mimeType: 'text/csv',
-        dialogTitle: 'Export Expense Data',
-        UTI: 'public.comma-separated-values-text'
-      });
+      await Sharing.shareAsync(fileUri);
     } else {
-      Alert.alert('Success', `Data exported to: ${fileName}`);
+      console.log('Sharing is not available on this platform');
     }
-
+    
+    return true;
   } catch (error) {
-    console.error('Export error:', error);
-    Alert.alert('Error', 'Failed to export data. Please try again.');
+    console.error('Error exporting to Excel:', error);
+    throw error;
   }
 };

@@ -28,7 +28,10 @@ export default function CreditExpensesScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadExpenses();
+      const fetchData = async () => {
+        await loadExpenses();
+      };
+      fetchData();
     }, [loadExpenses])
   );
 

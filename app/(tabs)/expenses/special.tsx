@@ -28,7 +28,10 @@ export default function SpecialExpensesScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadExpenses();
+      const fetchData = async () => {
+        await loadExpenses();
+      };
+      fetchData();
     }, [loadExpenses])
   );
 
