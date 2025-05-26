@@ -41,24 +41,26 @@ export default function ExpensesSummary() {
     <View style={styles.container}>
       <Text style={styles.title}>{t('thisMonthExpenses')}</Text>
       
-      <View style={styles.summaryRow}>
-        <Text style={styles.categoryText}>{t('dailyExpenses')}</Text>
-        <Text style={styles.amountText}>{formatCurrency(summary.daily)}</Text>
-      </View>
-      
-      <View style={styles.summaryRow}>
-        <Text style={styles.categoryText}>{t('creditExpenses')}</Text>
-        <Text style={styles.amountText}>{formatCurrency(summary.credit)}</Text>
-      </View>
-      
-      <View style={styles.summaryRow}>
-        <Text style={styles.categoryText}>{t('specialExpenses')}</Text>
-        <Text style={styles.amountText}>{formatCurrency(summary.special)}</Text>
-      </View>
-      
-      <View style={[styles.summaryRow, styles.totalRow]}>
-        <Text style={styles.totalText}>{t('totalExpenses')}</Text>
-        <Text style={styles.totalAmountText}>{formatCurrency(totalExpenses)}</Text>
+      <View style={styles.gridContainer}>
+        <View style={styles.gridItem}>
+          <Text style={styles.categoryText}>{t('dailyExpenses')}</Text>
+          <Text style={styles.amountText}>{formatCurrency(summary.daily)}</Text>
+        </View>
+        
+        <View style={styles.gridItem}>
+          <Text style={styles.categoryText}>Credit Card{'\n'}Expenses</Text>
+          <Text style={styles.amountText}>{formatCurrency(summary.credit)}</Text>
+        </View>
+        
+        <View style={styles.gridItem}>
+          <Text style={styles.categoryText}>Special{'\n'}Expenses</Text>
+          <Text style={styles.amountText}>{formatCurrency(summary.special)}</Text>
+        </View>
+        
+        <View style={styles.gridItem}>
+          <Text style={styles.categoryText}>Grand Total</Text>
+          <Text style={styles.totalAmountText}>{formatCurrency(totalExpenses)}</Text>
+        </View>
       </View>
     </View>
   );
@@ -77,33 +79,38 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: '#000000',
   },
-  summaryRow: {
+  gridContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+  },
+  gridItem: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    width: '48%',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   categoryText: {
-    fontSize: 16,
-    color: '#333333',
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 8,
+    fontWeight: '500',
   },
   amountText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000000',
-  },
-  totalRow: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#DDDDDD',
-  },
-  totalText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000000',
   },
   totalAmountText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000000',
   },
