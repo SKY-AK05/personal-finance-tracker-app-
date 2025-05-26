@@ -1,8 +1,19 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Link } from 'expo-router';
-import { Plus, CreditCard, Gift, ChartBar as BarChart2 } from 'lucide-react-native';
+import {
+  Plus,
+  CreditCard,
+  Gift,
+  ChartBar as BarChart2,
+} from 'lucide-react-native';
 import ExpensesSummary from '@/components/ExpensesSummary';
 
 export default function HomeScreen() {
@@ -19,32 +30,32 @@ export default function HomeScreen() {
         <ExpensesSummary />
 
         <View style={styles.actionContainer}>
-          <Text style={styles.sectionTitle}>{t('quickActions')}</Text>
-          
-          <Link href="/add-expense/daily" asChild>
+          <Text style={styles.sectionTitle}>{t('expenseCategories')}</Text>
+
+          <Link href="/expenses/daily" asChild>
             <TouchableOpacity style={styles.actionButton}>
               <View style={styles.iconContainer}>
                 <Plus size={24} color="#000000" />
               </View>
-              <Text style={styles.actionText}>{t('addDailyExpense')}</Text>
+              <Text style={styles.actionText}>{t('dailyExpenses')}</Text>
             </TouchableOpacity>
           </Link>
 
-          <Link href="/add-expense/credit" asChild>
+          <Link href="/expenses/credit" asChild>
             <TouchableOpacity style={styles.actionButton}>
               <View style={styles.iconContainer}>
                 <CreditCard size={24} color="#000000" />
               </View>
-              <Text style={styles.actionText}>{t('addCreditExpense')}</Text>
+              <Text style={styles.actionText}>{t('creditExpenses')}</Text>
             </TouchableOpacity>
           </Link>
 
-          <Link href="/add-expense/special" asChild>
+          <Link href="/expenses/special" asChild>
             <TouchableOpacity style={styles.actionButton}>
               <View style={styles.iconContainer}>
                 <Gift size={24} color="#000000" />
               </View>
-              <Text style={styles.actionText}>{t('addSpecialExpense')}</Text>
+              <Text style={styles.actionText}>{t('specialExpenses')}</Text>
             </TouchableOpacity>
           </Link>
 
