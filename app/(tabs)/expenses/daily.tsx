@@ -4,19 +4,31 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Link, Stack, useRouter } from 'expo-router';
 import { ArrowLeft, Plus } from 'lucide-react-native';
 import { formatCurrency } from '@/utils/format';
-
-// Mock data for demonstration
-const mockExpenses = [
-  { id: '1', date: '2024-02-20', amount: 150, purpose: 'Groceries' },
-  { id: '2', date: '2024-02-19', amount: 50, purpose: 'Transportation' },
-  { id: '3', date: '2024-02-18', amount: 200, purpose: 'Utilities' },
-];
+import { useState, useCallback } from 'react';
+import { getExpensesByType, Expense } from '@/utils/storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function DailyExpensesScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const renderExpenseItem = ({ item }: { item: typeof mockExpenses[0] }) => (
+  const loadExpenses = useCallback(async () => {
+    try {
+      setLoading(true);
+      const dailyExpenses = await getExpensesByType('daily');
+      setExpenses(dailyExpenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    } catch (error) {
+      console.error('Error loading expenses:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(loadExpenses);
+
+  const renderExpenseItem = ({ item }: { item: Expense }) => (
     <TouchableOpacity style={styles.expenseItem}>
       <View style={styles.expenseDetails}>
         <Text style={styles.expensePurpose}>{item.purpose}</Text>
@@ -44,13 +56,17 @@ export default function DailyExpensesScreen() {
       />
 
       <FlatList
-        data={mockExpenses}
+        data={expenses}
         renderItem={renderExpenseItem}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContainer}
+        refreshing={loading}
+        onRefresh={loadExpenses}
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{t('noExpenses')}</Text>
+            <Text style={styles.emptyText}>
+              {loading ? 'Loading...' : t('noExpenses')}
+            </Text>
           </View>
         )}
       />

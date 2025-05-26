@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ArrowLeft, Calendar, CircleAlert as AlertCircle } from 'lucide-react-native';
 import DateTimePicker from '@/components/DateTimePicker';
+import { saveExpense } from '@/utils/storage';
 
 export default function AddExpenseScreen() {
   const { type } = useLocalSearchParams();
@@ -32,20 +33,30 @@ export default function AddExpenseScreen() {
     }
   };
 
-  const handleSave = () => {
-    // In a real app, we would save the expense data to storage here
-    console.log({
-      type,
-      amount,
-      purpose,
-      notes,
-      date,
-      paymentMethod,
-      reminderEnabled
-    });
+  const handleSave = async () => {
+    if (!amount || !purpose) {
+      // You could add an alert here to show validation errors
+      return;
+    }
 
-    // Navigate back
-    router.back();
+    try {
+      const expense = {
+        id: Date.now().toString(),
+        type: type as 'daily' | 'credit' | 'special',
+        amount: parseFloat(amount),
+        purpose,
+        notes,
+        date: date.toISOString(),
+        paymentMethod: paymentMethod as 'cash' | 'upi' | 'card',
+        reminderEnabled
+      };
+
+      await saveExpense(expense);
+      router.back();
+    } catch (error) {
+      console.error('Error saving expense:', error);
+      // You could add an alert here to show the error
+    }
   };
 
   const paymentOptions = [

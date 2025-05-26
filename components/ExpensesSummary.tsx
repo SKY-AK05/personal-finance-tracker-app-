@@ -1,50 +1,64 @@
+
 import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatCurrency } from '@/utils/format';
-
-// Mock data for demonstration
-const mockData = {
-  today: 350,
-  thisMonth: 5260,
-  remaining: 4740,
-};
+import { useState, useEffect } from 'react';
+import { getExpensesSummary } from '@/utils/storage';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 export default function ExpensesSummary() {
   const { t } = useTranslation();
+  const [summary, setSummary] = useState({ daily: 0, credit: 0, special: 0 });
+  const [loading, setLoading] = useState(true);
+
+  const loadSummary = useCallback(async () => {
+    try {
+      setLoading(true);
+      const summaryData = await getExpensesSummary();
+      setSummary(summaryData);
+    } catch (error) {
+      console.error('Error loading summary:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(loadSummary);
+
+  const totalExpenses = summary.daily + summary.credit + summary.special;
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>{t('thisMonthExpenses')}</Text>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('expensesSummary')}</Text>
+      <Text style={styles.title}>{t('thisMonthExpenses')}</Text>
       
-      <View style={styles.row}>
-        <View style={styles.summaryItem}>
-          <Text style={styles.itemLabel}>{t('today')}</Text>
-          <Text style={styles.itemValue}>{formatCurrency(mockData.today)}</Text>
-        </View>
-        
-        <View style={styles.summaryItem}>
-          <Text style={styles.itemLabel}>{t('thisMonth')}</Text>
-          <Text style={styles.itemValue}>{formatCurrency(mockData.thisMonth)}</Text>
-        </View>
+      <View style={styles.summaryRow}>
+        <Text style={styles.categoryText}>{t('dailyExpenses')}</Text>
+        <Text style={styles.amountText}>{formatCurrency(summary.daily)}</Text>
       </View>
       
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBarContainer}>
-          <View 
-            style={[
-              styles.progressBar, 
-              { width: `${(mockData.thisMonth / 10000) * 100}%` }
-            ]} 
-          />
-        </View>
-        <View style={styles.progressLabels}>
-          <Text style={styles.progressLabel}>{t('spent')}</Text>
-          <Text style={styles.progressLabel}>{t('remaining')}</Text>
-        </View>
-        <View style={styles.progressValues}>
-          <Text style={styles.progressValue}>{formatCurrency(mockData.thisMonth)}</Text>
-          <Text style={styles.progressValue}>{formatCurrency(mockData.remaining)}</Text>
-        </View>
+      <View style={styles.summaryRow}>
+        <Text style={styles.categoryText}>{t('creditExpenses')}</Text>
+        <Text style={styles.amountText}>{formatCurrency(summary.credit)}</Text>
+      </View>
+      
+      <View style={styles.summaryRow}>
+        <Text style={styles.categoryText}>{t('specialExpenses')}</Text>
+        <Text style={styles.amountText}>{formatCurrency(summary.special)}</Text>
+      </View>
+      
+      <View style={[styles.summaryRow, styles.totalRow]}>
+        <Text style={styles.totalText}>{t('totalExpenses')}</Text>
+        <Text style={styles.totalAmountText}>{formatCurrency(totalExpenses)}</Text>
       </View>
     </View>
   );
@@ -55,7 +69,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     borderRadius: 16,
     padding: 20,
-    marginVertical: 16,
+    marginBottom: 24,
   },
   title: {
     fontSize: 20,
@@ -63,55 +77,39 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: '#000000',
   },
-  row: {
+  summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    paddingVertical: 8,
   },
-  summaryItem: {
-    flex: 1,
-  },
-  itemLabel: {
+  categoryText: {
     fontSize: 16,
-    color: '#555555',
-    marginBottom: 4,
+    color: '#333333',
   },
-  itemValue: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#000000',
-  },
-  progressContainer: {
-    marginTop: 8,
-  },
-  progressBarContainer: {
-    height: 12,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 6,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: '#000000',
-    borderRadius: 6,
-  },
-  progressLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  progressLabel: {
-    fontSize: 14,
-    color: '#555555',
-  },
-  progressValues: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  progressValue: {
+  amountText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#000000',
+  },
+  totalRow: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#DDDDDD',
+  },
+  totalText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  totalAmountText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666666',
+    textAlign: 'center',
   },
 });
