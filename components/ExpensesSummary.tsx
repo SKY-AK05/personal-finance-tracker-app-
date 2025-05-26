@@ -1,4 +1,3 @@
-
 import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatCurrency } from '@/utils/format';
@@ -27,7 +26,11 @@ export default function ExpensesSummary() {
     fetchData();
   }, []);
 
-  useFocusEffect(loadSummary);
+  useFocusEffect(
+    useCallback(() => {
+      loadSummary();
+    }, [loadSummary])
+  );
 
   const totalExpenses = summary.daily + summary.credit + summary.special;
 
@@ -46,17 +49,17 @@ export default function ExpensesSummary() {
           <Text style={styles.categoryTitle}>{t('dailyExpenses')}</Text>
           <Text style={styles.categoryAmount}>{formatCurrency(summary.daily)}</Text>
         </View>
-        
+
         <View style={styles.gridItem}>
           <Text style={styles.categoryTitle}>{t('creditExpenses')}</Text>
           <Text style={styles.categoryAmount}>{formatCurrency(summary.credit)}</Text>
         </View>
-        
+
         <View style={styles.gridItem}>
           <Text style={styles.categoryTitle}>{t('specialExpenses')}</Text>
           <Text style={styles.categoryAmount}>{formatCurrency(summary.special)}</Text>
         </View>
-        
+
         <View style={[styles.gridItem, styles.totalItem]}>
           <Text style={styles.totalTitle}>Grand Total</Text>
           <Text style={styles.totalAmount}>{formatCurrency(totalExpenses)}</Text>

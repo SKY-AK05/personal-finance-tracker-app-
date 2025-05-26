@@ -1,70 +1,45 @@
-
-import * as XLSX from 'xlsx';
-import { Platform, Alert } from 'react-native';
-import { getExpenses } from './storage';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import { Alert } from 'react-native';
+import { getAllExpenses } from './storage';
 
 export const exportToExcel = async () => {
   try {
-    const expenses = await getExpenses();
-    
+    const expenses = await getAllExpenses();
+
     if (expenses.length === 0) {
-      Alert.alert('No Data', 'No expenses found to export.');
+      Alert.alert('No Data', 'No expense data available to export.');
       return;
     }
 
-    // Prepare data for Excel
-    const excelData = expenses.map(expense => ({
-      Date: new Date(expense.date).toLocaleDateString(),
-      Type: expense.type.charAt(0).toUpperCase() + expense.type.slice(1),
-      Purpose: expense.purpose,
-      Amount: expense.amount,
-      'Payment Method': expense.paymentMethod.toUpperCase(),
-      Notes: expense.notes || '',
-      'Reminder Enabled': expense.reminderEnabled ? 'Yes' : 'No'
-    }));
+    // Create CSV content (Excel-compatible)
+    const headers = 'Date,Type,Amount,Description,Category\n';
+    const csvContent = expenses.map(expense => 
+      `${expense.date},${expense.type},${expense.amount},"${expense.description}","${expense.category || ''}"`
+    ).join('\n');
 
-    // Create workbook and worksheet
-    const ws = XLSX.utils.json_to_sheet(excelData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Expenses');
+    const fullContent = headers + csvContent;
 
-    // Create filename with current date
-    const currentDate = new Date().toISOString().split('T')[0];
-    const fileName = `expenses_${currentDate}.xlsx`;
+    // Create file path
+    const fileName = `expenses_${new Date().toISOString().split('T')[0]}.csv`;
+    const fileUri = FileSystem.documentDirectory + fileName;
 
-    if (Platform.OS === 'web') {
-      // Web implementation
-      const wbout = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
-      const blob = new Blob([wbout], { type: 'application/octet-stream' });
-      
-      // Create download link
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      Alert.alert('Export Successful', `Excel file downloaded as ${fileName}`);
+    // Write file
+    await FileSystem.writeAsStringAsync(fileUri, fullContent);
+
+    // Share file
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(fileUri, {
+        mimeType: 'text/csv',
+        dialogTitle: 'Export Expense Data',
+        UTI: 'public.comma-separated-values-text'
+      });
     } else {
-      // Native implementation (requires react-native-fs)
-      const RNFS = require('react-native-fs');
-      const wbout = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
-      const filePath = `${RNFS.DownloadDirectoryPath}/${fileName}`;
-      
-      await RNFS.writeFile(filePath, wbout, 'base64');
-      Alert.alert(
-        'Export Successful',
-        `Excel file saved to Downloads folder as ${fileName}`
-      );
+      Alert.alert('Success', `Data exported to: ${fileName}`);
     }
+
   } catch (error) {
     console.error('Export error:', error);
-    Alert.alert(
-      'Export Failed',
-      'An error occurred while exporting data. Please try again.'
-    );
+    Alert.alert('Error', 'Failed to export data. Please try again.');
   }
 };

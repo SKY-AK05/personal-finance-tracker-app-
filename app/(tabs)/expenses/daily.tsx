@@ -26,7 +26,11 @@ export default function DailyExpensesScreen() {
     }
   }, []);
 
-  useFocusEffect(loadExpenses);
+  useFocusEffect(
+    useCallback(() => {
+      loadExpenses();
+    }, [loadExpenses])
+  );
 
   const renderExpenseItem = ({ item }: { item: Expense }) => (
     <TouchableOpacity style={styles.expenseItem}>

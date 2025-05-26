@@ -22,7 +22,7 @@ export default function DashboardScreen() {
     try {
       setLoading(true);
       const expenses = await getExpenses();
-      
+
       const monthlyExpenses = expenses.filter(expense => {
         const expenseDate = new Date(expense.date);
         return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
@@ -31,11 +31,11 @@ export default function DashboardScreen() {
       const daily = monthlyExpenses
         .filter(expense => expense.type === 'daily')
         .reduce((sum, expense) => sum + expense.amount, 0);
-      
+
       const credit = monthlyExpenses
         .filter(expense => expense.type === 'credit')
         .reduce((sum, expense) => sum + expense.amount, 0);
-      
+
       const special = monthlyExpenses
         .filter(expense => expense.type === 'special')
         .reduce((sum, expense) => sum + expense.amount, 0);
@@ -48,7 +48,11 @@ export default function DashboardScreen() {
     }
   }, [currentMonth, currentYear]);
 
-  useFocusEffect(loadMonthlyData);
+  useFocusEffect(
+    useCallback(() => {
+      loadMonthlyData();
+    }, [loadMonthlyData])
+  );
 
   const handlePreviousMonth = () => {
     if (currentMonth === 0) {
@@ -91,28 +95,28 @@ export default function DashboardScreen() {
 
         <View style={styles.summaryContainer}>
           <Text style={styles.summaryTitle}>{t('monthlyOverview')}</Text>
-          
+
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>{t('dailyExpenses')}</Text>
             <Text style={styles.summaryValue}>
               {loading ? 'Loading...' : formatCurrency(expenseData.daily)}
             </Text>
           </View>
-          
+
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>{t('creditExpenses')}</Text>
             <Text style={styles.summaryValue}>
               {loading ? 'Loading...' : formatCurrency(expenseData.credit)}
             </Text>
           </View>
-          
+
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>{t('specialExpenses')}</Text>
             <Text style={styles.summaryValue}>
               {loading ? 'Loading...' : formatCurrency(expenseData.special)}
             </Text>
           </View>
-          
+
           <View style={[styles.summaryRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>{t('totalExpenses')}</Text>
             <Text style={styles.totalValue}>{formatCurrency(totalExpenses)}</Text>
@@ -128,7 +132,7 @@ export default function DashboardScreen() {
             <Filter size={20} color="#000000" />
             <Text style={styles.actionButtonText}>{t('filter')}</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.actionButton}>
             <Download size={20} color="#000000" />
             <Text style={styles.actionButtonText}>{t('export')}</Text>
