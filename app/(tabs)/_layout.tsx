@@ -1,3 +1,4 @@
+
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { useColorScheme } from 'react-native';
@@ -30,20 +31,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="credit"
-        options={{
-          title: t('credit'),
-          tabBarIcon: ({ color, size }) => <CreditCard size={28} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="special"
-        options={{
-          title: t('special'),
-          tabBarIcon: ({ color, size }) => <Gift size={28} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="dashboard"
         options={{
           title: t('summary'),
@@ -55,6 +42,24 @@ export default function TabLayout() {
         options={{
           title: t('settings'),
           tabBarIcon: ({ color, size }) => <Settings size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="expenses"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="credit"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="special"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
